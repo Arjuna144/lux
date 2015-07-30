@@ -60,6 +60,17 @@ Example:
 
 	(^ java.lang.String)
 
+#### Functions
+The bread and butter of functional programming; function types in Lux bear a resemblance to how they look in Haskell (albeit with a lispier flavor):
+
+Syntax
+
+	(-> <arg-1> <arg-2> ... <arg-n> <return>)
+
+Example:
+
+	(-> Text Int (Maybe (, Text Text)))
+
 #### Universal Quantification
 The way to define polymorphic/generic types.
 
@@ -69,7 +80,7 @@ Syntax:
 
 Example:
 
-	(All [a] (, (Eq a) (List a)))
+	(All [a b] (, (Eq a) (List (, a b))))
 
 ## Defining types
 
