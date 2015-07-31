@@ -107,6 +107,231 @@
 
 ## Macros
 
+### comment
+
+	(comment 1 2 3 4) ## Same as not writing anything...
+
+### lambda
+
+
+	(def const
+	  (lambda [x y] x))
+
+	(def const
+	  (lambda const [x y] x))
+
+### let
+
+
+	(let [x (foo bar)
+	      y (baz quux)]
+	  (op x y))
+
+### $
+
+	## Application of binary functions over variadic arguments.
+	($ text:++ "Hello, " name ".\nHow are you?")
+	=>
+	(text:++ "Hello, " (text:++ name ".\nHow are you?"))
+
+### |>
+
+	## Piping
+	(|> elems (map ->text) (interpose " ") (fold text:++ ""))
+	=>
+	(fold text:++ ""
+		  (interpose " "
+		             (map ->text elems)))
+
+### if
+
+	(if true
+	  "Oh, yeah!"
+	  "Aw hell naw!")
+
+### ^
+
+	## Macro to treat classes as types
+	(^ java.lang.Object)
+
+### ,
+
+	## Tuples
+	(, Text Int Bool)
+	
+	(,) ## The empty tuple, aka "unit"
+
+### |
+
+	(| #Yes #No)
+	
+	(|) ## The empty variant, aka "void"
+
+### &
+
+	## Records
+	(& #name Text
+	   #age Int
+	   #alive? Bool)
+
+### ->
+	
+	## Function types
+	(-> Int Int Int) ## This is the type of a function that takes 2 Ints and returns an Int
+
+### All
+
+	## Universal quantification.
+	(All List [a]
+		 (| #Nil
+		    (#Cons (, a (List a)))))
+
+	## It must be explicit, unlike in Haskell.
+	## Rank-n types will be possible as well as existential types
+	(All [a]
+	  (-> a a))
+
+### type
+Takes a type expression and returns it's representation as data-structure.
+
+	(type (All [a] (Maybe (List a))))
+
+### :
+
+	## The type-annotation macro
+	(: (List Int) (list 1 2 3))
+
+### :!
+
+	## The type-coercion macro
+	(:! Dinosaur (list 1 2 3))
+
+### deftype
+
+	## The type-definition macro
+	(deftype (List a)
+	  (| #Nil
+	     (#Cons (, a (List a)))))
+
+### exec
+
+	## Sequential execution of expressions (great for side-effects).
+	(exec
+	  (println! "#1")
+	  (println! "#2")
+	  (println! "#3")
+	  "YOLO")
+
+### def
+
+	## Macro for definining global constants/functions.
+	(def (rejoin-pair pair)
+	  (-> (, Syntax Syntax) (List Syntax))
+	  (let [[left right] pair]
+		(list left right)))
+
+### case
+
+	## The pattern-matching macro.
+	## Allows the usage of macros within the patterns to provide custom syntax.
+	(case (: (List Int) (list 1 2 3))
+	  (#Cons [x (#Cons [y (#Cons [z #Nil])])])
+	  (#Some ($ int:* x y z))
+
+	  _
+	  #None)
+
+	(case (: (List Int) (list 1 2 3))
+	  (\ (list x y z))
+	  (#Some ($ int:* x y z))
+
+	  _
+	  #None)
+
+	(deftype Weekday
+	  (| #Monday
+	     #Tuesday
+	     #Wednesday
+	     #Thursday
+	     #Friday
+	     #Saturday
+	     #Sunday))
+
+	(def (weekend? day)
+	  (-> Weekday Bool)
+	  (case day
+	     (\or #Saturday #Sunday)
+	     true
+
+	     _
+	     false))
+
+### \
+
+	## It's a special macro meant to be used with case
+
+### \or
+
+	## It's a special macro meant to be used with case
+
+### `
+
+	## Quasi-quotation as a macro. Unquote (~) and unquote-splice (~@) must also be used as forms
+	e.g.
+	(` (def (~ name)
+		 (lambda [(~@ args)]
+		   (~ body))))
+
+### sig
+
+	## Not mean to be used directly. Prefer defsig
+
+### struct
+
+	## Not mean to be used directly. Prefer defstruct
+
+### defsig
+
+	## Definition of signatures ala ML
+	(defsig #export (Ord a)
+	  (: (-> a a Bool)
+	     <)
+	  (: (-> a a Bool)
+	     <=)
+	  (: (-> a a Bool)
+	     >)
+	  (: (-> a a Bool)
+	     >=))
+
+### defstruct
+
+	## Definition of structures ala ML
+	(defstruct #export Int/Ord (Ord Int)
+	  (def (< x y)
+	     (i< x y))
+	  (def (<= x y)
+	     (or (i< x y)
+	         (i= x y)))
+	  (def (> x y)
+	     (i> x y))
+	  (def (>= x y)
+	     (or (i> x y)
+	         (i= x y))))
+
+### and
+
+	(and true false true) ## => false
+
+### or
+
+	(or true false true) ## => true
+
+### using
+
+	## Opens up a structure and provides all the definitions as local variables.
+	(using Int/Ord
+	  (< 5 10))
+
 ## Values
 
 ### .
