@@ -95,17 +95,88 @@
 
 ##### Note: Since Lux is still in early development, the structure of the compiler data-structure is subject to rapid and drastic changes between versions of Lux. Because of that, access to compiler data is best done through the functions provided in `lux/meta/lux`.
 
-### Macro
-
-	(deftype Macro
-	  (-> (List Syntax) Compiler (Either Text (, Compiler (List Syntax)))))
-
 ### Lux
 
 	(deftype (Lux a)
 	  (-> Compiler (Either Text (, Compiler a))))
 
+### Macro
+
+	(deftype Macro
+	  (-> (List Syntax) (Lux (List Syntax))))
+
 ## Macros
 
 ## Values
 
+### .
+Function composition.
+
+	(All [a b c]
+	  (-> (-> b c) (-> a b) (-> a c)))
+
+### i=
+Int equality.
+
+	(-> Int Int Bool)
+
+### i>
+Int greater-than.
+
+	(-> Int Int Bool)
+
+### i<
+Int lesser-than.
+
+	(-> Int Int Bool)
+
+### r=
+Real equality.
+
+	(-> Real Real Bool)
+
+### r>
+Real greater-than.
+
+	(-> Real Real Bool)
+
+### r<
+Real lesser-than.
+
+	(-> Real Real Bool)
+
+***
+
+Long story short, you've got similar definitions for arithmetic on ints and reals:
+`i+`, `i-`, `i*`, `i/`, `i%`, `i<=`, `i>=`, `r+`, `r-`, `r*`, `r/`, `r%`, `r<=`, `r>=`
+
+***
+
+### not
+
+	(-> Bool Bool)
+
+### id
+
+	(All [a] (-> a a))
+
+### flip
+
+	(All [a b c]
+	  (-> (-> a b c) (-> b a c)))
+
+### curry
+
+	(All [a b c]
+	  (-> (-> (, a b) c)
+	      (-> a b c)))
+
+### uncurry
+
+	(All [a b c]
+	  (-> (-> a b c)
+	      (-> (, a b) c)))
+
+### complement
+
+	(All [a] (-> (-> a Bool) (-> a Bool)))
