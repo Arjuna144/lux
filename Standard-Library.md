@@ -497,3 +497,78 @@ Long story short, you've got similar definitions for arithmetic on ints and real
 ### pow
 
 	(-> Real Real Real)
+
+# `lux/data/bool`
+
+## Structures
+
+### Bool/Eq
+
+	(Eq Bool)
+
+### Bool/Show
+
+	(Show Bool)
+
+### Or/Monoid
+
+	(Monoid Bool)
+
+### And/Monoid
+
+	(Monoid Bool)
+
+# `lux/data/bounded`
+
+## Signatures
+
+### Bounded
+
+	(defsig #export (Bounded a)
+	  (: a
+	     top)
+	
+	  (: a
+	     bottom))
+
+# `lux/data/char`
+
+## Structures
+
+### Char/Eq
+
+	(Eq Char)
+
+### Char/Show
+
+	(Show Char)
+
+# `lux/data/either`
+
+## Values
+
+### either
+
+	(All [a b c] (-> (-> a c) (-> b c) (Either a b) c))
+
+### lefts
+
+	(All [a b] (-> (List (Either a b)) (List a)))
+
+### rights
+
+	(All [a b] (-> (List (Either a b)) (List b)))
+
+### partition
+
+	(All [a b] (-> (List (Either a b)) (, (List a) (List b))))
+
+# `lux/data/eq`
+
+## Signatures
+
+### Eq
+
+	(defsig #export (Eq a)
+	  (: (-> a a Bool)
+	     =))
