@@ -405,3 +405,95 @@ Long story short, you've got similar definitions for arithmetic on ints and real
 ### complement
 
 	(All [a] (-> (-> a Bool) (-> a Bool)))
+
+# `lux/math`
+
+## Values
+
+### e
+
+	Real
+
+### pi
+
+	Real
+
+### cos
+
+	(-> Real Real)
+
+### sin
+
+	(-> Real Real)
+
+### tan
+
+	(-> Real Real)
+
+### acos
+
+	(-> Real Real)
+
+### asin
+
+	(-> Real Real)
+
+### atan
+
+	(-> Real Real)
+
+### cosh
+
+	(-> Real Real)
+
+### sinh
+
+	(-> Real Real)
+
+### tanh
+
+	(-> Real Real)
+
+### ceil
+
+	(-> Real Real)
+
+### floor
+
+	(-> Real Real)
+
+### exp
+
+	(-> Real Real)
+
+### log
+
+	(-> Real Real)
+
+### cbrt
+
+	(-> Real Real)
+
+### sqrt
+
+	(-> Real Real)
+
+### ->degrees
+
+	(-> Real Real)
+
+### ->radians
+
+	(-> Real Real)
+
+### round
+
+	(-> Real Int)
+
+### atan2
+
+	(-> Real Real Real)
+
+### pow
+
+	(-> Real Real Real)
