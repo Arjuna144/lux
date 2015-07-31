@@ -100,6 +100,12 @@
 	(deftype Macro
 	  (-> (List Syntax) Compiler (Either Text (, Compiler (List Syntax)))))
 
+### Lux
+
+	(deftype (Lux a)
+	  (-> Compiler (Either Text (, Compiler a))))
+
 ## Macros
 
 ## Values
+
