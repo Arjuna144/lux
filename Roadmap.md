@@ -23,6 +23,7 @@
 
 * Port compiler to ClojureScript in order to have a _Lux-to-JS_ compiler.
 * Cross-platform concurrency libraries.
+* Expand standard library.
 
 ## v0.6
 
