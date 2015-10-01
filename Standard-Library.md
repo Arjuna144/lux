@@ -628,8 +628,8 @@ ___
 ###Types
 #####Functor
 ```
-(All [a]
-  (& #map (All [b c] (-> (-> b c) (a b) (a c)))))
+(All [f]
+  (& #map (All [b c] (-> (-> b c) (f b) (f c)))))
 ```
 
 
@@ -644,10 +644,10 @@ ___
 ###Types
 #####Monad
 ```
-(All [a]
-  (& #_functor (lux/control/functor;Functor a)
-     #wrap (All [b] (-> b (a b)))
-     #join (All [b] (-> (a (a b)) (a b)))))
+(All [m]
+  (& #_functor (lux/control/functor;Functor m)
+     #wrap (All [b] (-> b (m b)))
+     #join (All [b] (-> (m (m b)) (m b)))))
 ```
 
 ###Macros
@@ -664,13 +664,13 @@ Example(s):
 
 ###Values
 #####bind
-`(All [a b c] (-> (Monad a) (-> b (a c)) (a b) (a c)))`
+`(All [m b c] (-> (Monad m) (-> b (m c)) (m b) (m c)))`
 
 #####seq%
-`(All [a b] (-> (Monad a) (lux;List (a b)) (a (lux;List b))))`
+`(All [m b] (-> (Monad m) (lux;List (m b)) (m (lux;List b))))`
 
 #####map%
-`(All [a b c] (-> (Monad a) (-> b (a c)) (lux;List b) (a (lux;List c))))`
+`(All [m b c] (-> (Monad m) (-> b (m c)) (lux;List b) (m (lux;List c))))`
 
 ___
 
@@ -678,10 +678,10 @@ ___
 ###Types
 #####CoMonad
 ```
-(All [a]
-  (& #_functor (lux/control/functor;Functor a)
-     #unwrap (All [b] (-> (a b) b))
-     #split (All [b] (-> (a b) (a (a b))))))
+(All [w]
+  (& #_functor (lux/control/functor;Functor w)
+     #unwrap (All [b] (-> (w b) b))
+     #split (All [b] (-> (w b) (w (w b))))))
 ```
 
 ###Macros
@@ -698,7 +698,7 @@ Example(s):
 
 ###Values
 #####extend
-`(All [a b c] (-> (CoMonad a) (-> (a b) c) (a b) (a c)))`
+`(All [w b c] (-> (CoMonad w) (-> (w b) c) (w b) (w c)))`
 
 ___
 
@@ -861,9 +861,9 @@ ___
 ###Types
 #####Fold
 ```
-(All [a]
-  (& #foldL (All [b c] (-> (-> b c b) b (a c) b))
-     #foldR (All [b c] (-> (-> c b b) b (a c) b))))
+(All [f]
+  (& #foldL (All [b c] (-> (-> b c b) b (f c) b))
+     #foldR (All [b c] (-> (-> c b b) b (f c) b))))
 ```
 
 
@@ -872,16 +872,16 @@ ___
 
 ###Values
 #####foldM
-`(All [a b] (-> (lux/control/monoid;Monoid b) (Fold a) (a b) b))`
+`(All [f b] (-> (lux/control/monoid;Monoid b) (Fold f) (f b) b))`
 
 #####size
-`(All [a b] (-> (Fold a) (a b) lux;Int))`
+`(All [f b] (-> (Fold f) (f b) lux;Int))`
 
 #####member?
-`(All [a b] (-> (lux/control/eq;Eq b) (Fold a) b (a b) lux;Bool))`
+`(All [f b] (-> (lux/control/eq;Eq b) (Fold f) b (f b) lux;Bool))`
 
 #####empty?
-`(All [a b] (-> (Fold a) (a b) lux;Bool))`
+`(All [f b] (-> (Fold f) (f b) lux;Bool))`
 
 ___
 
