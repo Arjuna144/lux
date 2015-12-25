@@ -43,47 +43,25 @@
 #####List
 ```
 (All [a]
-  (| #Nil
-     (#Cons a (List a))))
+  (| #Nil     (#Cons a (List a))))
 ```
 
 #####Maybe
 ```
 (All [a]
-  (| #None
-     (#Some a)))
+  (| #None     (#Some a)))
 ```
 
 #####Type
 ```
 ((All [a]
-  (| (#DataT Text (List (Type a)))
-     (#VariantT (List (Type a)))
-     (#TupleT (List (Type a)))
-     (#LambdaT (Type a) (Type a))
-     (#BoundT Int)
-     (#VarT Int)
-     (#ExT Int)
-     (#UnivQ (List (Type a)) (Type a))
-     (#ExQ (List (Type a)) (Type a))
-     (#AppT (Type a) (Type a))
-     (#NamedT Ident (Type a)))) Void)
+  (| (#DataT Text (List (Type a)))     (#VariantT (List (Type a)))     (#TupleT (List (Type a)))     (#LambdaT (Type a) (Type a))     (#BoundT Int)     (#VarT Int)     (#ExT Int)     (#UnivQ (List (Type a)) (Type a))     (#ExQ (List (Type a)) (Type a))     (#AppT (Type a) (Type a))     (#NamedT Ident (Type a)))) Void)
 ```
 
 #####Bindings
 ```
 (All [a b]
-  (& #counter Int
-     #mappings (List (, a b))))
-```
-
-#####Env
-```
-(All [a b]
-  (& #name Text
-     #inner-closures Int
-     #locals (Bindings a b)
-     #closure (Bindings a b)))
+  (& #counter Int     #mappings (List (, a b))))
 ```
 
 #####Cursor
@@ -96,23 +74,26 @@
 #####Meta
 ```
 (All [a b]
-  (& #meta a
-     #datum b))
+  (& #meta a     #datum b))
+```
+
+#####Analysis
+```
+(Meta (, Type Cursor) Void)
+```
+
+#####Env
+```
+(& #name Text
+   #inner-closures Int
+   #locals (Bindings Text Analysis)
+   #closure (Bindings Text Analysis))
 ```
 
 #####AST'
 ```
 (All [a]
-  (| (#BoolS Bool)
-     (#IntS Int)
-     (#RealS Real)
-     (#CharS Char)
-     (#TextS Text)
-     (#SymbolS Ident)
-     (#TagS Ident)
-     (#FormS (List (a (AST' a))))
-     (#TupleS (List (a (AST' a))))
-     (#RecordS (List (, (a (AST' a)) (a (AST' a)))))))
+  (| (#BoolS Bool)     (#IntS Int)     (#RealS Real)     (#CharS Char)     (#TextS Text)     (#SymbolS Ident)     (#TagS Ident)     (#FormS (List (a (AST' a))))     (#TupleS (List (a (AST' a))))     (#RecordS (List (, (a (AST' a)) (a (AST' a)))))))
 ```
 
 #####AST
@@ -123,8 +104,7 @@
 #####Either
 ```
 (All [a b]
-  (| (#Left a)
-     (#Right b)))
+  (| (#Left a)     (#Right b)))
 ```
 
 #####Source
@@ -137,33 +117,16 @@
 (All [a] (| (, Type Unit) Type a Ident))
 ```
 
-#####Analysis
-```
-Void
-```
-
 #####Module
 ```
 (All [a]
-  (& #module-aliases (List (, Text Text))
-     #defs (List (, Text (, Bool (DefData' (-> (List AST) ((All [b c] (-> b (Either Text (, b c)))) a (List AST)))))))
-     #imports (List Text)
-     #tags (List (, Text (, Int (List Ident) Type)))
-     #types (List (, Text (, (List Ident) Type)))))
+  (& #module-aliases (List (, Text Text))     #defs (List (, Text (, Bool (DefData' (-> (List AST) ((All [b c] (-> b (Either Text (, b c)))) a (List AST)))))))     #imports (List Text)     #tags (List (, Text (, Int (List Ident) Type)))     #types (List (, Text (, (List Ident) Type)))))
 ```
 
 #####Compiler
 ```
 ((All [a]
-  (& #source Source
-     #cursor Cursor
-     #modules (List (, Text (Module (Compiler a))))
-     #envs (List (Env Text (Meta (, Type Cursor) Analysis)))
-     #type-vars (Bindings Int Type)
-     #expected Type
-     #seed Int
-     #eval? Bool
-     #host Void)) Void)
+  (& #source Source     #cursor Cursor     #modules (List (, Text (Module (Compiler a))))     #envs (List Env)     #type-vars (Bindings Int Type)     #expected Type     #seed Int     #eval? Bool     #host Void)) Void)
 ```
 
 #####Macro
@@ -468,6 +431,14 @@ Example(s):
   (< 5 10))
 ```
 
+#####\open
+Example(s):
+```
+(def #export (range (\open) from to)
+  (All [a] (-> (Enum a) a a (List a)))
+  (range' <= succ from to))
+```
+
 #####cond
 Example(s):
 ```
@@ -531,14 +502,14 @@ Example(s):
     (\template [<tag>]
      [(<tag> members)
       (<tag> (list:map (beta-reduce env) members))])
-    [[#;VariantT]
-     [#;TupleT]]
+    ([#;VariantT]
+     [#;TupleT])
 
     (\template [<tag>]
      [(<tag> left right)
       (<tag> (beta-reduce env left) (beta-reduce env right))])
-    [[#;LambdaT]
-     [#;AppT]]
+    ([#;LambdaT]
+     [#;AppT])
 
     (\template [<tag>]
      [(<tag> env def)
@@ -548,12 +519,12 @@ Example(s):
 
         _
         type)])
-    [[#;UnivQ]
-     [#;ExQ]]
-    
+    ([#;UnivQ]
+     [#;ExQ])
+
     (#;BoundT idx)
     (? type (@ idx env))
-    
+
     (#;NamedT name type)
     (beta-reduce env type)
 
@@ -591,6 +562,9 @@ Example(s):
 #####splice-helper
 `(-> (List AST) (List AST) (List AST))`
 
+#####.
+`(All [a b c] (-> (-> b c) (-> a b) a c))`
+
 #####not
 `(-> Bool Bool)`
 
@@ -610,8 +584,7 @@ ___
 #####Monoid
 ```
 (All [a]
-  (& #unit a
-     #++ (-> a a a)))
+  (& #unit a     #++ (-> a a a)))
 ```
 
 
@@ -644,10 +617,8 @@ ___
 ###Types
 #####Monad
 ```
-(All [m]
-  (& #_functor (lux/control/functor;Functor m)
-     #wrap (All [b] (-> b (m b)))
-     #join (All [b] (-> (m (m b)) (m b)))))
+(All [a]
+  (& #_functor (lux/control/functor;Functor a)     #wrap (All [b] (-> b (a b)))     #join (All [b] (-> (a (a b)) (a b)))))
 ```
 
 ###Macros
@@ -672,33 +643,418 @@ Example(s):
 #####map%
 `(All [m b c] (-> (Monad m) (-> b (m c)) (lux;List b) (m (lux;List c))))`
 
+#####foldL%
+`(All [m b c] (-> (Monad m) (-> b c (m b)) b (lux;List c) (m b)))`
+
 ___
 
-#lux/control/comonad
+#lux/codata/function
+
+
+
+
+
+
+###Values
+#####const
+`(All [a b] (-> a b a))`
+
+#####flip
+`(All [a b c] (-> (-> a b c) b a c))`
+
+#####Comp/Monoid
+`(All [a] (lux/control/monoid;Monoid (-> a a)))`
+
+___
+
+#lux/data/tuple
+
+
+
+
+
+
+###Values
+#####first
+`(All [a b] (-> (, a b) a))`
+
+#####second
+`(All [a b] (-> (, a b) b))`
+
+#####curry
+`(All [a b c] (-> (-> (, a b) c) a b c))`
+
+#####uncurry
+`(All [a b c] (-> (-> a b c) (, a b) c))`
+
+#####swap
+`(All [a b] (-> (, a b) (, b a)))`
+
+___
+
+#lux/data/maybe
+
+
+
+
+
+
+###Values
+#####Maybe/Monoid
+`(All [a] (lux/control/monoid;Monoid (lux;Maybe a)))`
+
+#####Maybe/Functor
+`(lux/control/functor;Functor lux;Maybe)`
+
+#####Maybe/Monad
+`(lux/control/monad;Monad lux;Maybe)`
+
+#####?
+`(All [a] (-> a (lux;Maybe a) a))`
+
+___
+
+#lux/control/read
 ###Types
-#####CoMonad
+#####Read
 ```
-(All [w]
-  (& #_functor (lux/control/functor;Functor w)
-     #unwrap (All [b] (-> (w b) b))
-     #split (All [b] (-> (w b) (w (w b))))))
+(All [a]
+  (& #read (-> lux;Text (lux;Maybe a))))
 ```
 
+
+
+
+
+
+
+___
+
+#lux/control/show
+###Types
+#####Show
+```
+(All [a]
+  (& #show (-> a lux;Text)))
+```
+
+
+
+
+
+
+
+___
+
+#lux/control/bounded
+###Types
+#####Bounded
+```
+(All [a]
+  (& #top a     #bottom a))
+```
+
+
+
+
+
+
+
+___
+
+#lux/control/eq
+###Types
+#####Eq
+```
+(All [a]
+  (& #= (-> a a lux;Bool)))
+```
+
+
+
+
+
+
+
+___
+
+#lux/control/ord
+###Types
+#####Ord
+```
+(All [a]
+  (& #_eq (lux/control/eq;Eq a)     #< (-> a a lux;Bool)     #<= (-> a a lux;Bool)     #> (-> a a lux;Bool)     #>= (-> a a lux;Bool)))
+```
+
+
+
+
+
+###Values
+#####ord$
+`(All [a] (-> (lux/control/eq;Eq a) (-> a a lux;Bool) (-> a a lux;Bool) (Ord a)))`
+
+#####max
+`(All [a] (-> (Ord a) a a a))`
+
+#####min
+`(All [a] (-> (Ord a) a a a))`
+
+___
+
+#lux/control/enum
+###Types
+#####Enum
+```
+(All [a]
+  (& #_ord (lux/control/ord;Ord a)     #succ (-> a a)     #pred (-> a a)))
+```
+
+
+
+
+
+###Values
+#####range
+`(All [a] (-> (Enum a) a a (lux;List a)))`
+
+___
+
+#lux/control/number
+###Types
+#####Number
+```
+(All [a]
+  (& #+ (-> a a a)     #- (-> a a a)     #* (-> a a a)     #/ (-> a a a)     #% (-> a a a)     #negate (-> a a)     #signum (-> a a)     #abs (-> a a)     #from-int (-> lux;Int a)))
+```
+
+
+
+
+
+
+
+___
+
+#lux/data/number
+
+
+
+
+
+
+###Values
+#####Int/Number
+`(lux/control/number;Number lux;Int)`
+
+#####Real/Number
+`(lux/control/number;Number lux;Real)`
+
+#####Int/Eq
+`(lux/control/eq;Eq lux;Int)`
+
+#####Real/Eq
+`(lux/control/eq;Eq lux;Real)`
+
+#####Int/Ord
+`(lux/control/ord;Ord lux;Int)`
+
+#####Real/Ord
+`(lux/control/ord;Ord lux;Real)`
+
+#####Int/Enum
+`(lux/control/enum;Enum lux;Int)`
+
+#####Real/Enum
+`(lux/control/enum;Enum lux;Real)`
+
+#####Int/Bounded
+`(lux/control/bounded;Bounded lux;Int)`
+
+#####Real/Bounded
+`(lux/control/bounded;Bounded lux;Real)`
+
+#####IntAdd/Monoid
+`(lux/control/monoid;Monoid lux;Int)`
+
+#####IntMul/Monoid
+`(lux/control/monoid;Monoid lux;Int)`
+
+#####IntMax/Monoid
+`(lux/control/monoid;Monoid lux;Int)`
+
+#####IntMin/Monoid
+`(lux/control/monoid;Monoid lux;Int)`
+
+#####RealAdd/Monoid
+`(lux/control/monoid;Monoid lux;Real)`
+
+#####RealMul/Monoid
+`(lux/control/monoid;Monoid lux;Real)`
+
+#####RealMax/Monoid
+`(lux/control/monoid;Monoid lux;Real)`
+
+#####RealMin/Monoid
+`(lux/control/monoid;Monoid lux;Real)`
+
+#####Int/Show
+`(lux/control/show;Show lux;Int)`
+
+#####Real/Show
+`(lux/control/show;Show lux;Real)`
+
+#####Int/Read
+`(lux/control/read;Read lux;Int)`
+
+#####Real/Read
+`(lux/control/read;Read lux;Real)`
+
+#####->int
+`(-> lux;Real lux;Int)`
+
+#####->real
+`(-> lux;Int lux;Real)`
+
+___
+
+#lux/data/text
+
+
 ###Macros
-#####be
+#####<>
 Example(s):
 ```
-(be Stream/CoMonad
-  [ys (f1 xs)
-   zs (f2 ys)]
-  (head (tail zs)))
+(let [name "John Doe"]
+  (<> "Welcome, #{name}"))
 ```
 
 
 
 ###Values
-#####extend
-`(All [w b c] (-> (CoMonad w) (-> (w b) c) (w b) (w c)))`
+#####size
+`(-> lux;Text lux;Int)`
+
+#####@
+`(-> lux;Int lux;Text (lux;Maybe lux;Char))`
+
+#####contains?
+`(-> lux;Text lux;Text lux;Bool)`
+
+#####lower-case
+`(-> lux;Text lux;Text)`
+
+#####upper-case
+`(-> lux;Text lux;Text)`
+
+#####trim
+`(-> lux;Text lux;Text)`
+
+#####sub
+`(-> lux;Int lux;Int lux;Text (lux;Maybe lux;Text))`
+
+#####sub'
+`(-> lux;Int lux;Text (lux;Maybe lux;Text))`
+
+#####replace
+`(-> lux;Text lux;Text lux;Text lux;Text)`
+
+#####index-of'
+`(-> lux;Text lux;Int lux;Text (lux;Maybe lux;Int))`
+
+#####index-of
+`(-> lux;Text lux;Text (lux;Maybe lux;Int))`
+
+#####last-index-of'
+`(-> lux;Text lux;Int lux;Text (lux;Maybe lux;Int))`
+
+#####last-index-of
+`(-> lux;Text lux;Text (lux;Maybe lux;Int))`
+
+#####starts-with?
+`(-> lux;Text lux;Text lux;Bool)`
+
+#####ends-with?
+`(-> lux;Text lux;Text lux;Bool)`
+
+#####split
+`(-> lux;Int lux;Text (lux;Maybe (, lux;Text lux;Text)))`
+
+#####split-with
+`(-> lux;Text lux;Text (lux;Maybe (, lux;Text lux;Text)))`
+
+#####split-all-with
+`(-> lux;Text lux;Text (lux;List lux;Text))`
+
+#####split-lines
+`(-> lux;Text (lux;List lux;Text))`
+
+#####Text/Eq
+`(lux/control/eq;Eq lux;Text)`
+
+#####Text/Ord
+`(lux/control/ord;Ord lux;Text)`
+
+#####Text/Show
+`(lux/control/show;Show lux;Text)`
+
+#####Text/Monoid
+`(lux/control/monoid;Monoid lux;Text)`
+
+___
+
+#lux/data/bool
+
+
+
+
+
+
+###Values
+#####Bool/Eq
+`(lux/control/eq;Eq lux;Bool)`
+
+#####Or/Monoid
+`(lux/control/monoid;Monoid lux;Bool)`
+
+#####And/Monoid
+`(lux/control/monoid;Monoid lux;Bool)`
+
+#####Bool/Show
+`(lux/control/show;Show lux;Bool)`
+
+#####Bool/Read
+`(lux/control/read;Read lux;Bool)`
+
+#####comp
+`(All [a] (-> (-> a lux;Bool) a lux;Bool))`
+
+___
+
+#lux/control/fold
+###Types
+#####Fold
+```
+(All [a]
+  (& #foldL (All [b c] (-> (-> b c b) b (a c) b))     #foldR (All [b c] (-> (-> c b b) b (a c) b))))
+```
+
+
+
+
+
+###Values
+#####fold
+`(All [a b] (-> (lux/control/monoid;Monoid b) (Fold a) (a b) b))`
+
+#####size
+`(All [a b] (-> (Fold a) (a b) lux;Int))`
+
+#####member?
+`(All [a b] (-> (lux/control/eq;Eq b) (Fold a) b (a b) lux;Bool))`
+
+#####empty?
+`(All [a b] (-> (Fold a) (a b) lux;Bool))`
 
 ___
 
@@ -729,9 +1085,6 @@ Example(s):
 ###Values
 #####List/Fold
 `(lux/control/fold;Fold lux;List)`
-
-#####fold
-`(All [a] (-> (lux/control/monoid;Monoid a) (lux;List a) a))`
 
 #####reverse
 `(All [a] (-> (lux;List a) (lux;List a)))`
@@ -811,367 +1164,34 @@ Example(s):
 #####empty?
 `(All [a] (-> (lux;List a) lux;Bool))`
 
-___
-
-#lux/control/eq
-###Types
-#####Eq
-```
-(All [a]
-  (& #= (-> a a lux;Bool)))
-```
-
-
-
-
-
-
-
-___
-
-#lux/control/ord
-###Types
-#####Ord
-```
-(All [a]
-  (& #_eq (lux/control/eq;Eq a)
-     #< (-> a a lux;Bool)
-     #<= (-> a a lux;Bool)
-     #> (-> a a lux;Bool)
-     #>= (-> a a lux;Bool)))
-```
-
-
-
-
-
-###Values
-#####ord$
-`(All [a] (-> (lux/control/eq;Eq a) (-> a a lux;Bool) (-> a a lux;Bool) (Ord a)))`
-
-#####max
-`(All [a] (-> (Ord a) a a a))`
-
-#####min
-`(All [a] (-> (Ord a) a a a))`
-
-___
-
-#lux/control/fold
-###Types
-#####Fold
-```
-(All [f]
-  (& #foldL (All [b c] (-> (-> b c b) b (f c) b))
-     #foldR (All [b c] (-> (-> c b b) b (f c) b))))
-```
-
-
-
-
-
-###Values
-#####foldM
-`(All [f b] (-> (lux/control/monoid;Monoid b) (Fold f) (f b) b))`
-
-#####size
-`(All [f b] (-> (Fold f) (f b) lux;Int))`
-
 #####member?
-`(All [f b] (-> (lux/control/eq;Eq b) (Fold f) b (f b) lux;Bool))`
-
-#####empty?
-`(All [f b] (-> (Fold f) (f b) lux;Bool))`
+`(All [a] (-> (lux/control/eq;Eq a) a (lux;List a) lux;Bool))`
 
 ___
 
-#lux/data/number/int
-
-
-
-
-
-
-###Values
-#####Int/Number
-`(lux/control/number;Number lux;Int)`
-
-#####Int/Eq
-`(lux/control/eq;Eq lux;Int)`
-
-#####Int/Ord
-`(lux/control/ord;Ord lux;Int)`
-
-#####Int/Enum
-`(lux/control/enum;Enum lux;Int)`
-
-#####Int/Bounded
-`(lux/control/bounded;Bounded lux;Int)`
-
-#####IntAdd/Monoid
-`(lux/control/monoid;Monoid lux;Int)`
-
-#####IntMul/Monoid
-`(lux/control/monoid;Monoid lux;Int)`
-
-#####IntMax/Monoid
-`(lux/control/monoid;Monoid lux;Int)`
-
-#####IntMin/Monoid
-`(lux/control/monoid;Monoid lux;Int)`
-
-#####Int/Show
-`(lux/control/show;Show lux;Int)`
-
-___
-
-#lux/control/number
+#lux/control/comonad
 ###Types
-#####Number
+#####CoMonad
 ```
 (All [a]
-  (& #+ (-> a a a)
-     #- (-> a a a)
-     #* (-> a a a)
-     #/ (-> a a a)
-     #% (-> a a a)
-     #negate (-> a a)
-     #signum (-> a a)
-     #abs (-> a a)
-     #from-int (-> lux;Int a)))
+  (& #_functor (lux/control/functor;Functor a)     #unwrap (All [b] (-> (a b) b))     #split (All [b] (-> (a b) (a (a b))))))
 ```
-
-
-
-
-
-
-
-___
-
-#lux/control/bounded
-###Types
-#####Bounded
-```
-(All [a]
-  (& #top a
-     #bottom a))
-```
-
-
-
-
-
-
-
-___
-
-#lux/control/show
-###Types
-#####Show
-```
-(All [a]
-  (& #show (-> a lux;Text)))
-```
-
-
-
-
-
-
-
-___
-
-#lux/control/enum
-###Types
-#####Enum
-```
-(All [a]
-  (& #_ord (lux/control/ord;Ord a)
-     #succ (-> a a)
-     #pred (-> a a)))
-```
-
-
-
-
-
-###Values
-#####range
-`(All [a] (-> (Enum a) a a (lux;List a)))`
-
-___
-
-#lux/data/bool
-
-
-
-
-
-
-###Values
-#####Bool/Eq
-`(lux/control/eq;Eq lux;Bool)`
-
-#####Bool/Show
-`(lux/control/show;Show lux;Bool)`
-
-#####Or/Monoid
-`(lux/control/monoid;Monoid lux;Bool)`
-
-#####And/Monoid
-`(lux/control/monoid;Monoid lux;Bool)`
-
-#####comp
-`(All [a] (-> (-> a lux;Bool) a lux;Bool))`
-
-___
-
-#lux/codata/function
-
-
-
-
-
-
-###Values
-#####const
-`(All [a b] (-> a b a))`
-
-#####flip
-`(All [a b c] (-> (-> a b c) b a c))`
-
-#####.
-`(All [a b c] (-> (-> b c) (-> a b) a c))`
-
-#####Comp/Monoid
-`(All [a] (lux/control/monoid;Monoid (-> a a)))`
-
-___
-
-#lux/data/text
-
 
 ###Macros
-#####<>
+#####be
 Example(s):
 ```
-(let [name "John Doe"]
-  (<> "Welcome, #{name}"))
+(be Stream/CoMonad
+  [ys (f1 xs)
+   zs (f2 ys)]
+  (head (tail zs)))
 ```
 
 
 
 ###Values
-#####size
-`(-> lux;Text lux;Int)`
-
-#####@
-`(-> lux;Int lux;Text (lux;Maybe lux;Char))`
-
-#####contains?
-`(-> lux;Text lux;Text lux;Bool)`
-
-#####lower-case
-`(-> lux;Text lux;Text)`
-
-#####upper-case
-`(-> lux;Text lux;Text)`
-
-#####trim
-`(-> lux;Text lux;Text)`
-
-#####sub'
-`(-> lux;Int lux;Int lux;Text (lux;Maybe lux;Text))`
-
-#####sub
-`(-> lux;Int lux;Text (lux;Maybe lux;Text))`
-
-#####split
-`(-> lux;Int lux;Text (lux;Maybe (, lux;Text lux;Text)))`
-
-#####replace
-`(-> lux;Text lux;Text lux;Text lux;Text)`
-
-#####index-of'
-`(-> lux;Text lux;Int lux;Text (lux;Maybe lux;Int))`
-
-#####index-of
-`(-> lux;Text lux;Text (lux;Maybe lux;Int))`
-
-#####last-index-of'
-`(-> lux;Text lux;Int lux;Text (lux;Maybe lux;Int))`
-
-#####last-index-of
-`(-> lux;Text lux;Text (lux;Maybe lux;Int))`
-
-#####starts-with?
-`(-> lux;Text lux;Text lux;Bool)`
-
-#####ends-with?
-`(-> lux;Text lux;Text lux;Bool)`
-
-#####Text/Eq
-`(lux/control/eq;Eq lux;Text)`
-
-#####Text/Ord
-`(lux/control/ord;Ord lux;Text)`
-
-#####Text/Show
-`(lux/control/show;Show lux;Text)`
-
-#####Text/Monoid
-`(lux/control/monoid;Monoid lux;Text)`
-
-#####split-lines
-`(-> lux;Text (lux;List lux;Text))`
-
-___
-
-#lux/data/maybe
-
-
-
-
-
-
-###Values
-#####Maybe/Monoid
-`(All [a] (lux/control/monoid;Monoid (lux;Maybe a)))`
-
-#####Maybe/Functor
-`(lux/control/functor;Functor lux;Maybe)`
-
-#####Maybe/Monad
-`(lux/control/monad;Monad lux;Maybe)`
-
-#####?
-`(All [a] (-> a (lux;Maybe a) a))`
-
-___
-
-#lux/data/tuple
-
-
-
-
-
-
-###Values
-#####first
-`(All [a b] (-> (, a b) a))`
-
-#####second
-`(All [a b] (-> (, a b) b))`
-
-#####curry
-`(All [a b c] (-> (-> (, a b) c) a b c))`
-
-#####uncurry
-`(All [a b c] (-> (-> a b c) (, a b) c))`
-
-#####swap
-`(All [a b] (-> (, a b) (, b a)))`
+#####extend
+`(All [a b c] (-> (CoMonad a) (-> (a b) c) (a b) (a c)))`
 
 ___
 
@@ -1230,10 +1250,10 @@ ___
 #####partition
 `(All [a b] (-> (lux;List (lux;Either a b)) (, (lux;List a) (lux;List b))))`
 
-#####Error/Functor
+#####Either/Functor
 `(All [a] (lux/control/functor;Functor (lux;Either a)))`
 
-#####Error/Monad
+#####Either/Monad
 `(All [a] (lux/control/monad;Monad (lux;Either a)))`
 
 ___
@@ -1258,43 +1278,6 @@ ___
 
 #####Id/CoMonad
 `(lux/control/comonad;CoMonad Id)`
-
-___
-
-#lux/data/number/real
-
-
-
-
-
-
-###Values
-#####Real/Number
-`(lux/control/number;Number lux;Real)`
-
-#####Real/Eq
-`(lux/control/eq;Eq lux;Real)`
-
-#####Real/Ord
-`(lux/control/ord;Ord lux;Real)`
-
-#####Real/Bounded
-`(lux/control/bounded;Bounded lux;Real)`
-
-#####RealAdd/Monoid
-`(lux/control/monoid;Monoid lux;Real)`
-
-#####RealMul/Monoid
-`(lux/control/monoid;Monoid lux;Real)`
-
-#####RealMax/Monoid
-`(lux/control/monoid;Monoid lux;Real)`
-
-#####RealMin/Monoid
-`(lux/control/monoid;Monoid lux;Real)`
-
-#####Real/Show
-`(lux/control/show;Show lux;Real)`
 
 ___
 
@@ -1337,6 +1320,299 @@ ___
 
 #####Writer/Monad
 `(All [a] (-> (lux/control/monoid;Monoid a) (lux/control/monad;Monad (Writer a))))`
+
+___
+
+#lux/meta/ast
+
+
+
+
+
+
+###Values
+#####bool
+`(-> lux;Bool lux;AST)`
+
+#####int
+`(-> lux;Int lux;AST)`
+
+#####real
+`(-> lux;Real lux;AST)`
+
+#####char
+`(-> lux;Char lux;AST)`
+
+#####text
+`(-> lux;Text lux;AST)`
+
+#####symbol
+`(-> lux;Ident lux;AST)`
+
+#####tag
+`(-> lux;Ident lux;AST)`
+
+#####form
+`(-> (lux;List lux;AST) lux;AST)`
+
+#####tuple
+`(-> (lux;List lux;AST) lux;AST)`
+
+#####record
+`(-> (lux;List (, lux;AST lux;AST)) lux;AST)`
+
+#####AST/Show
+`(lux/control/show;Show lux;AST)`
+
+#####AST/Eq
+`(lux/control/eq;Eq lux;AST)`
+
+___
+
+#lux/codata/lazy
+###Types
+#####Lazy
+```
+(All [a b] (-> (-> a b) b))
+```
+
+###Macros
+#####...
+Example(s):
+```
+(def my-thunk (... (+ 1 2)))
+```
+
+
+
+###Values
+#####!
+`(All [a] (-> (Lazy a) a))`
+
+#####call/cc
+`(All [a b c] (Lazy (-> a (Lazy b c)) (Lazy a c)))`
+
+#####run-lazy
+`(All [a b] (-> (Lazy a b) (-> a b) b))`
+
+#####Lazy/Functor
+`(lux/control/functor;Functor Lazy)`
+
+#####Lazy/Monad
+`(lux/control/monad;Monad Lazy)`
+
+___
+
+#lux/meta/lux
+
+
+
+
+
+
+###Values
+#####Lux/Functor
+`(lux/control/functor;Functor lux;Lux)`
+
+#####Lux/Monad
+`(lux/control/monad;Monad lux;Lux)`
+
+#####get-module-name
+`(lux;Lux lux;Text)`
+
+#####find-macro
+`(-> lux;Ident (lux;Lux (lux;Maybe lux;Macro)))`
+
+#####normalize
+`(-> lux;Ident (lux;Lux lux;Ident))`
+
+#####macro-expand-once
+`(-> lux;AST (lux;Lux (lux;List lux;AST)))`
+
+#####macro-expand
+`(-> lux;AST (lux;Lux (lux;List lux;AST)))`
+
+#####macro-expand-all
+`(-> lux;AST (lux;Lux (lux;List lux;AST)))`
+
+#####gensym
+`(-> lux;Text (lux;Lux lux;AST))`
+
+#####fail
+`(All [a] (-> lux;Text (lux;Lux a)))`
+
+#####macro-expand-1
+`(-> lux;AST (lux;Lux lux;AST))`
+
+#####module-exists?
+`(-> lux;Text (lux;Lux lux;Bool))`
+
+#####exported-defs
+`(-> lux;Text (lux;Lux (lux;List lux;Text)))`
+
+#####find-in-env
+`(-> lux;Text lux;Compiler (lux;Maybe lux;Type))`
+
+#####find-in-defs
+`(-> lux;Ident lux;Compiler (lux;Maybe lux;Type))`
+
+#####find-var-type
+`(-> lux;Ident (lux;Lux lux;Type))`
+
+#####find-type
+`(-> lux;Ident (lux;Lux lux;Type))`
+
+#####defs
+`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
+
+#####exports
+`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
+
+#####modules
+`(lux;Lux (lux;List lux;Text))`
+
+#####find-module
+`(-> lux;Text (lux;Lux (lux;Module lux;Compiler)))`
+
+#####tags-for
+`(-> lux;Ident (lux;Lux (lux;Maybe (lux;List lux;Ident))))`
+
+___
+
+#lux/meta/syntax
+###Types
+#####Parser
+```
+(All [a] (-> (lux;List lux;AST) (lux;Maybe (, (lux;List lux;AST) a))))
+```
+
+###Macros
+#####defsyntax
+Example(s):
+```
+(defsyntax #export (object [super local-symbol^] [interfaces (tuple^ (*^ local-symbol^))]
+                           [methods (*^ method-def^)])
+  (emit (@list (` (;_jvm_anon-class (~ (text$ super))
+                                    [(~@ (map text$ interfaces))]
+                                    [(~@ (map gen-method-def methods))])))))
+```
+
+
+
+###Values
+#####Parser/Functor
+`(lux/control/functor;Functor Parser)`
+
+#####Parser/Monad
+`(lux/control/monad;Monad Parser)`
+
+#####id^
+`(Parser lux;AST)`
+
+#####bool^
+`(Parser lux;Bool)`
+
+#####bool?^
+`(-> lux;Bool (Parser lux;Bool))`
+
+#####bool!^
+`(-> lux;Bool (Parser lux;Unit))`
+
+#####int^
+`(Parser lux;Int)`
+
+#####int?^
+`(-> lux;Int (Parser lux;Bool))`
+
+#####int!^
+`(-> lux;Int (Parser lux;Unit))`
+
+#####real^
+`(Parser lux;Real)`
+
+#####real?^
+`(-> lux;Real (Parser lux;Bool))`
+
+#####real!^
+`(-> lux;Real (Parser lux;Unit))`
+
+#####char^
+`(Parser lux;Char)`
+
+#####char?^
+`(-> lux;Char (Parser lux;Bool))`
+
+#####char!^
+`(-> lux;Char (Parser lux;Unit))`
+
+#####text^
+`(Parser lux;Text)`
+
+#####text?^
+`(-> lux;Text (Parser lux;Bool))`
+
+#####text!^
+`(-> lux;Text (Parser lux;Unit))`
+
+#####symbol^
+`(Parser lux;Ident)`
+
+#####symbol?^
+`(-> lux;Ident (Parser lux;Bool))`
+
+#####symbol!^
+`(-> lux;Ident (Parser lux;Unit))`
+
+#####tag^
+`(Parser lux;Ident)`
+
+#####tag?^
+`(-> lux;Ident (Parser lux;Bool))`
+
+#####tag!^
+`(-> lux;Ident (Parser lux;Unit))`
+
+#####assert
+`(-> lux;Bool (Parser (,)))`
+
+#####nat^
+`(Parser lux;Int)`
+
+#####local-symbol^
+`(Parser lux;Text)`
+
+#####local-tag^
+`(Parser lux;Text)`
+
+#####form^
+`(All [a] (-> (Parser a) (Parser a)))`
+
+#####tuple^
+`(All [a] (-> (Parser a) (Parser a)))`
+
+#####record^
+`(All [a] (-> (Parser a) (Parser a)))`
+
+#####?^
+`(All [a] (-> (Parser a) (Parser (lux;Maybe a))))`
+
+#####*^
+`(All [a] (-> (Parser a) (Parser (lux;List a))))`
+
+#####+^
+`(All [a] (-> (Parser a) (Parser (lux;List a))))`
+
+#####&^
+`(All [a b] (-> (Parser a) (Parser b) (Parser (, a b))))`
+
+#####|^
+`(All [a b] (-> (Parser a) (Parser b) (Parser (lux;Either a b))))`
+
+#####||^
+`(All [a] (-> (lux;List (Parser a)) (Parser a)))`
+
+#####end^
+`(Parser (,))`
 
 ___
 
@@ -1408,299 +1684,6 @@ Example(s):
 
 #####Stream/CoMonad
 `(lux/control/comonad;CoMonad Stream)`
-
-___
-
-#lux/meta/lux
-
-
-
-
-
-
-###Values
-#####Lux/Functor
-`(lux/control/functor;Functor lux;Lux)`
-
-#####Lux/Monad
-`(lux/control/monad;Monad lux;Lux)`
-
-#####get-module-name
-`(lux;Lux lux;Text)`
-
-#####find-macro
-`(-> lux;Ident (lux;Lux (lux;Maybe lux;Macro)))`
-
-#####normalize
-`(-> lux;Ident (lux;Lux lux;Ident))`
-
-#####macro-expand
-`(-> lux;AST (lux;Lux (lux;List lux;AST)))`
-
-#####macro-expand-all
-`(-> lux;AST (lux;Lux (lux;List lux;AST)))`
-
-#####gensym
-`(-> lux;Text (lux;Lux lux;AST))`
-
-#####emit
-`(All [a] (-> a (lux;Lux a)))`
-
-#####fail
-`(All [a] (-> lux;Text (lux;Lux a)))`
-
-#####macro-expand-1
-`(-> lux;AST (lux;Lux lux;AST))`
-
-#####module-exists?
-`(-> lux;Text (lux;Lux lux;Bool))`
-
-#####exported-defs
-`(-> lux;Text (lux;Lux (lux;List lux;Text)))`
-
-#####find-in-env
-`(-> lux;Text lux;Compiler (lux;Maybe lux;Type))`
-
-#####find-in-defs
-`(-> lux;Ident lux;Compiler (lux;Maybe lux;Type))`
-
-#####find-var-type
-`(-> lux;Ident (lux;Lux lux;Type))`
-
-#####find-type
-`(-> lux;Ident (lux;Lux lux;Type))`
-
-#####defs
-`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
-
-#####exports
-`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
-
-#####modules
-`(lux;Lux (lux;List lux;Text))`
-
-#####find-module
-`(-> lux;Text (lux;Lux (lux;Module lux;Compiler)))`
-
-#####tags-for
-`(-> lux;Ident (lux;Lux (lux;Maybe (lux;List lux;Ident))))`
-
-___
-
-#lux/meta/ast
-
-
-
-
-
-
-###Values
-#####bool$
-`(-> lux;Bool lux;AST)`
-
-#####int$
-`(-> lux;Int lux;AST)`
-
-#####real$
-`(-> lux;Real lux;AST)`
-
-#####char$
-`(-> lux;Char lux;AST)`
-
-#####text$
-`(-> lux;Text lux;AST)`
-
-#####symbol$
-`(-> lux;Ident lux;AST)`
-
-#####tag$
-`(-> lux;Ident lux;AST)`
-
-#####form$
-`(-> (lux;List lux;AST) lux;AST)`
-
-#####tuple$
-`(-> (lux;List lux;AST) lux;AST)`
-
-#####record$
-`(-> (lux;List (, lux;AST lux;AST)) lux;AST)`
-
-#####AST/Show
-`(lux/control/show;Show lux;AST)`
-
-#####AST/Eq
-`(lux/control/eq;Eq lux;AST)`
-
-___
-
-#lux/meta/syntax
-###Types
-#####Parser
-```
-(All [a] (-> (lux;List lux;AST) (lux;Maybe (, (lux;List lux;AST) a))))
-```
-
-###Macros
-#####defsyntax
-Example(s):
-```
-(defsyntax #export (object [super local-symbol^] [interfaces (tuple^ (*^ local-symbol^))]
-                           [methods (*^ method-def^)])
-  (emit (@list (` (;_jvm_anon-class (~ (text$ super))
-                                    [(~@ (map text$ interfaces))]
-                                    [(~@ (map gen-method-def methods))])))))
-```
-
-
-
-###Values
-#####Parser/Functor
-`(lux/control/functor;Functor Parser)`
-
-#####Parser/Monad
-`(lux/control/monad;Monad Parser)`
-
-#####id^
-`(Parser lux;AST)`
-
-#####bool^
-`(Parser lux;Bool)`
-
-#####int^
-`(Parser lux;Int)`
-
-#####real^
-`(Parser lux;Real)`
-
-#####char^
-`(Parser lux;Char)`
-
-#####text^
-`(Parser lux;Text)`
-
-#####symbol^
-`(Parser lux;Ident)`
-
-#####tag^
-`(Parser lux;Ident)`
-
-#####assert
-`(-> lux;Bool (Parser (,)))`
-
-#####nat^
-`(Parser lux;Int)`
-
-#####local-symbol^
-`(Parser lux;Text)`
-
-#####local-tag^
-`(Parser lux;Text)`
-
-#####bool?^
-`(-> lux;Bool (Parser lux;Bool))`
-
-#####int?^
-`(-> lux;Int (Parser lux;Bool))`
-
-#####real?^
-`(-> lux;Real (Parser lux;Bool))`
-
-#####char?^
-`(-> lux;Char (Parser lux;Bool))`
-
-#####text?^
-`(-> lux;Text (Parser lux;Bool))`
-
-#####symbol?^
-`(-> lux;Ident (Parser lux;Bool))`
-
-#####tag?^
-`(-> lux;Ident (Parser lux;Bool))`
-
-#####bool!^
-`(-> lux;Bool (Parser lux;Unit))`
-
-#####int!^
-`(-> lux;Int (Parser lux;Unit))`
-
-#####real!^
-`(-> lux;Real (Parser lux;Unit))`
-
-#####char!^
-`(-> lux;Char (Parser lux;Unit))`
-
-#####text!^
-`(-> lux;Text (Parser lux;Unit))`
-
-#####symbol!^
-`(-> lux;Ident (Parser lux;Unit))`
-
-#####tag!^
-`(-> lux;Ident (Parser lux;Unit))`
-
-#####form^
-`(All [a] (-> (Parser a) (Parser a)))`
-
-#####tuple^
-`(All [a] (-> (Parser a) (Parser a)))`
-
-#####record^
-`(All [a] (-> (Parser a) (Parser a)))`
-
-#####?^
-`(All [a] (-> (Parser a) (Parser (lux;Maybe a))))`
-
-#####*^
-`(All [a] (-> (Parser a) (Parser (lux;List a))))`
-
-#####+^
-`(All [a] (-> (Parser a) (Parser (lux;List a))))`
-
-#####&^
-`(All [a b] (-> (Parser a) (Parser b) (Parser (, a b))))`
-
-#####|^
-`(All [a b] (-> (Parser a) (Parser b) (Parser (lux;Either a b))))`
-
-#####||^
-`(All [a] (-> (lux;List (Parser a)) (Parser (lux;Maybe a))))`
-
-#####end^
-`(Parser (,))`
-
-___
-
-#lux/codata/lazy
-###Types
-#####Lazy
-```
-(All [a b] (-> (-> a b) b))
-```
-
-###Macros
-#####...
-Example(s):
-```
-(def my-thunk (... (+ 1 2)))
-```
-
-
-
-###Values
-#####!
-`(All [a] (-> (Lazy a) a))`
-
-#####call/cc
-`(All [a b c] (Lazy (-> a (Lazy b c)) (Lazy a c)))`
-
-#####run-lazy
-`(All [a b] (-> (Lazy a b) (-> a b) b))`
-
-#####Lazy/Functor
-`(lux/control/functor;Functor Lazy)`
-
-#####Lazy/Monad
-`(lux/control/monad;Monad Lazy)`
 
 ___
 
@@ -1778,99 +1761,86 @@ Example(s):
 
 ___
 
-#lux/host/jvm
+#lux/meta/type
 
+
+
+
+
+
+###Values
+#####Type/Show
+`(lux/control/show;Show lux;Type)`
+
+#####Type/Eq
+`(lux/control/eq;Eq lux;Type)`
+
+#####beta-reduce
+`(-> (lux;List lux;Type) lux;Type lux;Type)`
+
+#####apply-type
+`(-> lux;Type lux;Type (lux;Maybe lux;Type))`
+
+___
+
+#lux/host/jvm
+###Types
+#####Array
+```
+(All [a] (^ #Array a))
+```
 
 ###Macros
-#####Array
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-#####defclass
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-#####definterface
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
 #####object
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
+(object java.lang.Object [(io.vertx.core.Handler io.vertx.core.buffer.Buffer)]
+    []
+    (#override (io.vertx.core.Handler A) handle [] [(body A)] void
+               (run-io (k body)))
+    )
 ```
 
 #####program
 Example(s):
 ```
 (program args
-  (write-line "Hello, world!"))
+  (do IO/Monad
+    [app-state &&state;gen-state]
+    (&&server-host;deploy-server &&util;server-port (handler app-state))))
 ```
 
-#####???
+#####null
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
-```
-
-#####try
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-#####instance?
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-#####locking
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
+(null)
 ```
 
 #####null?
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
+(null? object)
 ```
 
-#####new$
+#####instance?
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
+(instance? class object)
 ```
 
-#####invoke-virtual$
+#####jvm-import
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
+(jvm-import io.vertx.core.Vertx
+  (#static vertx [] [] io.vertx.core.Vertx #io)
+  (createHttpServer [] [] io.vertx.core.http.HttpServer #io)
+  (deployVerticle   [] [io.vertx.core.Verticle] void #io))
 ```
 
-#####invoke-interface$
+#####array-length
 Example(s):
 ```
-## To be explained in the JVM-interop wiki page
-```
-
-#####invoke-special$
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-#####invoke-static$
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
+(array-length my-array)
 ```
 
 
@@ -1894,13 +1864,13 @@ Example(s):
 
 
 ###Values
-#####write-char
+#####print-char
 `(-> lux;Char (lux/codata/io;IO (,)))`
 
-#####write
+#####print
 `(-> lux;Text (lux/codata/io;IO (,)))`
 
-#####write-line
+#####print-line
 `(-> lux;Text (lux/codata/io;IO (,)))`
 
 #####read-char
@@ -1908,28 +1878,6 @@ Example(s):
 
 #####read-line
 `(lux/codata/io;IO (lux;Maybe lux;Text))`
-
-___
-
-#lux/meta/type
-
-
-
-
-
-
-###Values
-#####Type/Show
-`(lux/control/show;Show lux;Type)`
-
-#####Type/Eq
-`(lux/control/eq;Eq lux;Type)`
-
-#####beta-reduce
-`(-> (lux;List lux;Type) lux;Type lux;Type)`
-
-#####apply-type
-`(-> lux;Type lux;Type (lux;Maybe lux;Type))`
 
 ___
 
