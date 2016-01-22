@@ -25,14 +25,14 @@
 (^ java.lang.String)
 ```
 
-#####Unit
-```
-(,)
-```
-
 #####Void
 ```
-(|)
+Void
+```
+
+#####Unit
+```
+Unit
 ```
 
 #####Ident
@@ -43,7 +43,7 @@
 #####List
 ```
 (All [a]
-  (| #Nil     (#Cons a (List a))))
+  (| #Nil     (#Cons (, a (List a)))))
 ```
 
 #####Maybe
@@ -55,7 +55,23 @@
 #####Type
 ```
 ((All [a]
-  (| (#DataT Text (List (Type a)))     (#VariantT (List (Type a)))     (#TupleT (List (Type a)))     (#LambdaT (Type a) (Type a))     (#BoundT Int)     (#VarT Int)     (#ExT Int)     (#UnivQ (List (Type a)) (Type a))     (#ExQ (List (Type a)) (Type a))     (#AppT (Type a) (Type a))     (#NamedT Ident (Type a)))) Void)
+  (| (#DataT (, Text (List (Type a))))     #VoidT     #UnitT     (#SumT (, (Type a) (Type a)))     (#ProdT (, (Type a) (Type a)))     (#LambdaT (, (Type a) (Type a)))     (#BoundT Int)     (#VarT Int)     (#ExT Int)     (#UnivQ (, (List (Type a)) (Type a)))     (#ExQ (, (List (Type a)) (Type a)))     (#AppT (, (Type a) (Type a)))     (#NamedT (, Ident (Type a))))) Void)
+```
+
+#####DefMetaValue
+```
+((All [a]
+  (| (#BoolM Bool)     (#IntM Int)     (#RealM Real)     (#CharM Char)     (#TextM Text)     (#IdentM Ident)     (#ListM (List (DefMetaValue a)))     (#DictM (List (, Text (DefMetaValue a)))))) Void)
+```
+
+#####DefMeta
+```
+(List (, Ident DefMetaValue))
+```
+
+#####DefData
+```
+(, Type DefMeta Unit)
 ```
 
 #####Bindings
@@ -112,41 +128,24 @@
 (List (Meta Cursor Text))
 ```
 
-#####DefData'
-```
-(All [a] (| (, Type Unit) Type a Ident))
-```
-
 #####Module
 ```
-(All [a]
-  (& #module-aliases (List (, Text Text))     #defs (List (, Text (, Bool (DefData' (-> (List AST) ((All [b c] (-> b (Either Text (, b c)))) a (List AST)))))))     #imports (List Text)     #tags (List (, Text (, Int (List Ident) Type)))     #types (List (, Text (, (List Ident) Type)))))
+(& #module-aliases (List (, Text Text))
+   #defs (List (, Text DefData))
+   #imports (List Text)
+   #tags (List (, Text Int (List Ident) Type))
+   #types (List (, Text (List Ident) Type)))
 ```
 
 #####Compiler
 ```
 ((All [a]
-  (& #source Source     #cursor Cursor     #modules (List (, Text (Module (Compiler a))))     #envs (List Env)     #type-vars (Bindings Int Type)     #expected Type     #seed Int     #eval? Bool     #host Void)) Void)
+  (& #source Source     #cursor Cursor     #modules (List (, Text Module))     #envs (List Env)     #type-vars (Bindings Int Type)     #expected Type     #seed Int     #eval? Bool     #host Void)) Void)
 ```
 
 #####Macro
 ```
 (-> (List AST) ((All [a b] (-> a (Either Text (, a b)))) Compiler (List AST)))
-```
-
-#####DefData
-```
-(DefData' Macro)
-```
-
-#####Definition
-```
-(Meta Bool DefData)
-```
-
-#####Lux
-```
-(All [a] (-> Compiler (Either Text (, Compiler a))))
 ```
 
 ###Macros
@@ -183,7 +182,16 @@ Example(s):
 ## Tuples
 (, Text Int Bool)
 
-(,) ## The empty tuple, aka "unit"
+(,) ## The empty tuple, aka Unit
+```
+
+#####||
+Example(s):
+```
+## Variants
+(|| Text Int Bool)
+
+(||) ## The empty tuple, aka Void
 ```
 
 #####$
@@ -268,15 +276,6 @@ Example(s):
 ```
 ## The type-coercion macro
 (:! Dinosaur (list 1 2 3))
-```
-
-#####deftype
-Example(s):
-```
-## The type-definition macro
-(deftype (List a)
-  (| #Nil
-     (#Cons (, a (List a)))))
 ```
 
 #####exec
@@ -423,6 +422,15 @@ Example(s):
 (or true false true) ## => true
 ```
 
+#####deftype
+Example(s):
+```
+## The type-definition macro
+(deftype (List a)
+  (| #Nil
+     (#Cons (, a (List a)))))
+```
+
 #####using
 Example(s):
 ```
@@ -543,12 +551,6 @@ Example(s):
     (recur (inc count) (f x))))
 ```
 
-#####export
-Example(s):
-```
-(export Lux/Monad modules find-in-env)
-```
-
 #####\slots
 Example(s):
 ```
@@ -561,6 +563,9 @@ Example(s):
 ###Values
 #####splice-helper
 `(-> (List AST) (List AST) (List AST))`
+
+#####Lux
+`Type`
 
 #####.
 `(All [a b c] (-> (-> b c) (-> a b) a c))`
@@ -601,8 +606,8 @@ ___
 ###Types
 #####Functor
 ```
-(All [f]
-  (& #map (All [b c] (-> (-> b c) (f b) (f c)))))
+(All [a b c]
+  (-> (-> b c) (a b) (a c)))
 ```
 
 
@@ -635,16 +640,16 @@ Example(s):
 
 ###Values
 #####bind
-`(All [m b c] (-> (Monad m) (-> b (m c)) (m b) (m c)))`
+`(All [a b c] (-> (Monad a) (-> b (a c)) (a b) (a c)))`
 
 #####seq%
-`(All [m b] (-> (Monad m) (lux;List (m b)) (m (lux;List b))))`
+`(All [a b] (-> (Monad a) (lux;List (a b)) (a (lux;List b))))`
 
 #####map%
-`(All [m b c] (-> (Monad m) (-> b (m c)) (lux;List b) (m (lux;List c))))`
+`(All [a b c] (-> (Monad a) (-> b (a c)) (lux;List b) (a (lux;List c))))`
 
 #####foldL%
-`(All [m b c] (-> (Monad m) (-> b c (m b)) b (lux;List c) (m b)))`
+`(All [a b c] (-> (Monad a) (-> b c (a b)) b (lux;List c) (a b)))`
 
 ___
 
@@ -719,7 +724,7 @@ ___
 #####Read
 ```
 (All [a]
-  (& #read (-> lux;Text (lux;Maybe a))))
+  (-> lux;Text (lux;Maybe a)))
 ```
 
 
@@ -735,7 +740,7 @@ ___
 #####Show
 ```
 (All [a]
-  (& #show (-> a lux;Text)))
+  (-> a lux;Text))
 ```
 
 
@@ -767,7 +772,7 @@ ___
 #####Eq
 ```
 (All [a]
-  (& #= (-> a a lux;Bool)))
+  (-> a a lux;Bool))
 ```
 
 
@@ -1062,16 +1067,16 @@ ___
 
 
 ###Macros
-#####@list
+#####list
 Example(s):
 ```
-(@list 1 2 3)
+(list 1 2 3)
 ```
 
-#####@list&
+#####list&
 Example(s):
 ```
-(@list& 1 2 3 (@list 4 5 6))
+(list& 1 2 3 (@list 4 5 6))
 ```
 
 #####zip
@@ -1155,6 +1160,9 @@ Example(s):
 #####sort
 `(All [a] (-> (lux/control/ord;Ord a) (lux;List a) (lux;List a)))`
 
+#####range
+`(-> lux;Int lux;Int (lux;List lux;Int))`
+
 #####zip2
 `(All [a b] (-> (lux;List a) (lux;List b) (lux;List (, a b))))`
 
@@ -1200,7 +1208,7 @@ ___
 #####Hash
 ```
 (All [a]
-  (& #hash (-> a lux;Int)))
+  (-> a lux;Int))
 ```
 
 
@@ -1447,7 +1455,7 @@ ___
 #####module-exists?
 `(-> lux;Text (lux;Lux lux;Bool))`
 
-#####exported-defs
+#####exporteds-defs
 `(-> lux;Text (lux;Lux (lux;List lux;Text)))`
 
 #####find-in-env
@@ -1463,16 +1471,16 @@ ___
 `(-> lux;Ident (lux;Lux lux;Type))`
 
 #####defs
-`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
+`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;DefData))))`
 
 #####exports
-`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;Definition))))`
+`(-> lux;Text (lux;Lux (lux;List (, lux;Text lux;DefData))))`
 
 #####modules
 `(lux;Lux (lux;List lux;Text))`
 
 #####find-module
-`(-> lux;Text (lux;Lux (lux;Module lux;Compiler)))`
+`(-> lux;Text (lux;Lux lux;Module))`
 
 #####tags-for
 `(-> lux;Ident (lux;Lux (lux;Maybe (lux;List lux;Ident))))`
@@ -1483,7 +1491,7 @@ ___
 ###Types
 #####Parser
 ```
-(All [a] (-> (lux;List lux;AST) (lux;Maybe (, (lux;List lux;AST) a))))
+(All [a] (-> (lux;List lux;AST) (lux;Either lux;Text (, (lux;List lux;AST) a))))
 ```
 
 ###Macros
@@ -1516,7 +1524,7 @@ Example(s):
 `(-> lux;Bool (Parser lux;Bool))`
 
 #####bool!^
-`(-> lux;Bool (Parser lux;Unit))`
+`(-> lux;Bool (Parser Unit))`
 
 #####int^
 `(Parser lux;Int)`
@@ -1525,7 +1533,7 @@ Example(s):
 `(-> lux;Int (Parser lux;Bool))`
 
 #####int!^
-`(-> lux;Int (Parser lux;Unit))`
+`(-> lux;Int (Parser Unit))`
 
 #####real^
 `(Parser lux;Real)`
@@ -1534,7 +1542,7 @@ Example(s):
 `(-> lux;Real (Parser lux;Bool))`
 
 #####real!^
-`(-> lux;Real (Parser lux;Unit))`
+`(-> lux;Real (Parser Unit))`
 
 #####char^
 `(Parser lux;Char)`
@@ -1543,7 +1551,7 @@ Example(s):
 `(-> lux;Char (Parser lux;Bool))`
 
 #####char!^
-`(-> lux;Char (Parser lux;Unit))`
+`(-> lux;Char (Parser Unit))`
 
 #####text^
 `(Parser lux;Text)`
@@ -1552,7 +1560,7 @@ Example(s):
 `(-> lux;Text (Parser lux;Bool))`
 
 #####text!^
-`(-> lux;Text (Parser lux;Unit))`
+`(-> lux;Text (Parser Unit))`
 
 #####symbol^
 `(Parser lux;Ident)`
@@ -1561,7 +1569,7 @@ Example(s):
 `(-> lux;Ident (Parser lux;Bool))`
 
 #####symbol!^
-`(-> lux;Ident (Parser lux;Unit))`
+`(-> lux;Ident (Parser Unit))`
 
 #####tag^
 `(Parser lux;Ident)`
@@ -1570,10 +1578,10 @@ Example(s):
 `(-> lux;Ident (Parser lux;Bool))`
 
 #####tag!^
-`(-> lux;Ident (Parser lux;Unit))`
+`(-> lux;Ident (Parser Unit))`
 
 #####assert
-`(-> lux;Bool (Parser (,)))`
+`(-> lux;Bool lux;Text (Parser Unit))`
 
 #####nat^
 `(Parser lux;Int)`
@@ -1612,7 +1620,13 @@ Example(s):
 `(All [a] (-> (lux;List (Parser a)) (Parser a)))`
 
 #####end^
-`(Parser (,))`
+`(Parser Unit)`
+
+#####size-n^
+`(All [a] (-> lux;Int (Parser (lux;List a)) (Parser (lux;List a))))`
+
+#####join-error-messages
+`(-> lux;Text lux;Text lux;Text)`
 
 ___
 
@@ -1734,17 +1748,16 @@ ___
 ###Types
 #####IO
 ```
-(All [a] (-> (,) a))
+(All [a] (-> Void a))
 ```
 
 ###Macros
-#####@io
+#####io
 Example(s):
 ```
-## Macro for wrapping arbitrary computations inside the IO monad.
-(@io (exec
-       (print! msg)
-       "Some value..."))
+(io (exec
+      (print! msg)
+      "Some value..."))
 ```
 
 
@@ -1822,12 +1835,6 @@ Example(s):
 (null? object)
 ```
 
-#####instance?
-Example(s):
-```
-(instance? class object)
-```
-
 #####jvm-import
 Example(s):
 ```
@@ -1854,30 +1861,115 @@ ___
 #lux/host/io
 
 
-###Macros
-#####with-open
-Example(s):
-```
-## To be explained in the JVM-interop wiki page
-```
-
-
-
 ###Values
 #####print-char
-`(-> lux;Char (lux/codata/io;IO (,)))`
+`(-> lux;Char (lux/codata/io;IO Unit))`
 
 #####print
-`(-> lux;Text (lux/codata/io;IO (,)))`
+`(-> lux;Text (lux/codata/io;IO Unit))`
 
 #####print-line
-`(-> lux;Text (lux/codata/io;IO (,)))`
+`(-> lux;Text (lux/codata/io;IO Unit))`
 
 #####read-char
 `(lux/codata/io;IO (lux;Maybe lux;Char))`
 
 #####read-line
 `(lux/codata/io;IO (lux;Maybe lux;Text))`
+
+___
+
+#lux/concurrency/async
+###Types
+#####Async
+```
+(All [a] (^ lux.concurrency.async.JvmAsync a))
+```
+
+###Macros
+#####async
+Example(s):
+```
+## Creates an instance of Async
+(async)
+```
+
+
+
+###Values
+#####Async/Functor
+`(lux/control/functor;Functor Async)`
+
+#####Async/Monad
+`(lux/control/monad;Monad Async)`
+
+#####future
+`(All [a] (-> (lux/codata/io;IO a) (Async a)))`
+
+#####wait
+`(-> lux;Int (Async Unit))`
+
+#####&!
+`(All [a b] (-> (Async a) (Async b) (Async (, a b))))`
+
+#####|!
+`(All [a b] (-> (Async a) (Async b) (Async (lux;Either a b))))`
+
+#####time-out!
+`(All [a] (-> lux;Int (Async a) (Async (lux;Maybe a))))`
+
+#####query
+`(All [a] (-> (Async a) (lux;Maybe a)))`
+
+#####resolve
+`(All [a] (-> a (Async a) (lux/codata/io;IO lux;Bool)))`
+
+#####delay
+`(All [a] (-> lux;Int a (Async a)))`
+
+___
+
+#lux/concurrency/frp
+###Types
+#####Chan
+```
+(All [a] (lux/concurrency/async;Async (lux;Maybe (, a (Chan a)))))
+```
+
+###Macros
+#####chan
+Example(s):
+```
+## Creates an instance of Chan
+(chan)
+```
+
+
+
+###Values
+#####poll
+`(All [a] (-> lux;Int (lux/codata/io;IO a) (Chan a)))`
+
+#####filter
+`(All [a] (-> (-> a lux;Bool) (Chan a) (Chan a)))`
+
+#####write
+`(All [a] (-> a (Chan a) (lux/codata/io;IO (lux;Maybe (Chan a)))))`
+
+#####pipe
+`(All [a] (-> (Chan a) (Chan a) (lux/concurrency/async;Async Unit)))`
+
+#####merge
+`(All [a] (-> (lux;List (Chan a)) (Chan a)))`
+
+#####foldL
+`(All [a b] (-> (-> a b a) a (Chan b) (lux/concurrency/async;Async a)))`
+
+#####no-dups
+`(All [a] (-> (lux/control/eq;Eq a) (Chan a) (Chan a)))`
+
+#####Chan/Functor
+`(lux/control/functor;Functor Chan)`
 
 ___
 
