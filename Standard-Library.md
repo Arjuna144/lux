@@ -497,7 +497,7 @@ Creates code documentation, embedding text as comments and properly formatting t
 
 ## For Example:
 (as-code
- "Allows arbitrary looping, using the "recur" form to re-start the loop.
+ "Allows arbitrary looping, using the \"recur\" form to re-start the loop.
   Can be used in monadic code to create monadic loops."
  (loop [count 0
         x init]
@@ -917,7 +917,7 @@ Function composition.
 #####Cont
 ```
 (deftype (Cont a)
-  (All [b] (-> (-> a c) c)))
+  (All [b] (-> (-> a b) b)))
 ```
 
 ###Macros
@@ -1228,9 +1228,9 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 (defsig (Applicative f)
   (: (lux/control/functor;Functor f)
      functor)
-  (: (All [b] (-> b (f b)))
+  (: (All [b] (-> a (f a)))
      wrap)
-  (: (All [b c] (-> (f (-> b c)) (f b) (f c)))
+  (: (All [b c] (-> (f (-> a b)) (f a) (f b)))
      apply))
 ```
 
@@ -1262,9 +1262,9 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 #####Category
 ```
 (defsig (Category cat)
-  (: (All [b] (cat b b))
+  (: (All [b] (cat a a))
      id)
-  (: (All [b c d] (-> (cat c d) (cat b c) (cat b d)))
+  (: (All [b c d] (-> (cat b c) (cat a b) (cat a c)))
      .))
 ```
 
@@ -1281,9 +1281,9 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 (defsig (CoMonad w)
   (: (lux/control/functor;Functor w)
      functor)
-  (: (All [b] (-> (w b) b))
+  (: (All [b] (-> (w a) a))
      unwrap)
-  (: (All [b] (-> (w b) (w (w b))))
+  (: (All [b] (-> (w a) (w (w a))))
      split))
 ```
 
@@ -1342,9 +1342,9 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 #####Fold
 ```
 (defsig (Fold F)
-  (: (All [b c] (-> (-> b c b) b (F c) b))
+  (: (All [b c] (-> (-> a b a) a (F b) a))
      foldL)
-  (: (All [b c] (-> (-> c b b) b (F c) b))
+  (: (All [b c] (-> (-> b a a) a (F b) a))
      foldR))
 ```
 
@@ -1370,7 +1370,7 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 #####Functor
 ```
 (defsig (Functor f)
-  (: (All [b c] (-> (-> b c) (f b) (f c)))
+  (: (All [b c] (-> (-> a b) (f a) (f b)))
      map))
 ```
 
@@ -1402,7 +1402,7 @@ Represents values produced by asynchronous computations (unlike IO, which is syn
 (defsig (Monad m)
   (: (lux/control/applicative;Applicative m)
      applicative)
-  (: (All [b] (-> (m (m b)) (m b)))
+  (: (All [b] (-> (m (m a)) (m a)))
      join))
 ```
 
